@@ -1,0 +1,196 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  PJPrefix:
+    Description: Enter a prefix of this system.
+    Type: String
+    Default: "test"
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9][ -~]*"
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+
+Resources:
+  FSxSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: !Sub "Security group for ${PJPrefix}"
+      SecurityGroupIngress:
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 464
+          ToPort: 464
+          IpProtocol: UDP
+        - CidrIpv6: "::/0"
+          FromPort: 464
+          ToPort: 464
+          IpProtocol: UDP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 464
+          ToPort: 464
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 464
+          ToPort: 464
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 49152
+          ToPort: 65535
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 49152
+          ToPort: 65535
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 389
+          ToPort: 389
+          IpProtocol: UDP
+        - CidrIpv6: "::/0"
+          FromPort: 389
+          ToPort: 389
+          IpProtocol: UDP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 53
+          ToPort: 53
+          IpProtocol: UDP
+        - CidrIpv6: "::/0"
+          FromPort: 53
+          ToPort: 53
+          IpProtocol: UDP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 389
+          ToPort: 389
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 389
+          ToPort: 389
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 123
+          ToPort: 123
+          IpProtocol: UDP
+        - CidrIpv6: "::/0"
+          FromPort: 123
+          ToPort: 123
+          IpProtocol: UDP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 445
+          ToPort: 445
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 445
+          ToPort: 445
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 9389
+          ToPort: 9389
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 9389
+          ToPort: 9389
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 3268
+          ToPort: 3268
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 3268
+          ToPort: 3268
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 88
+          ToPort: 88
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 88
+          ToPort: 88
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 135
+          ToPort: 135
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 135
+          ToPort: 135
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 636
+          ToPort: 636
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 636
+          ToPort: 636
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 3269
+          ToPort: 3269
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 3269
+          ToPort: 3269
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 53
+          ToPort: 53
+          IpProtocol: TCP
+        - CidrIpv6: "::/0"
+          FromPort: 53
+          ToPort: 53
+          IpProtocol: TCP
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 88
+          ToPort: 88
+          IpProtocol: UDP
+        - CidrIpv6: "::/0"
+          FromPort: 88
+          ToPort: 88
+          IpProtocol: UDP
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-fsx-sg"
+
+  RDPSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: !Sub Security group for ${PJPrefix}
+      SecurityGroupIngress:
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 3389
+          ToPort: 3389
+          IpProtocol: tcp
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-rdp-sg"
+
+  FSxClientSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "sample"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          SourceSecurityGroupId: !Ref FSxSecurityGroup
+        - IpProtocol: udp
+          FromPort: 0
+          ToPort: 65535
+          SourceSecurityGroupId: !Ref FSxSecurityGroup
+      VpcId: { "Fn::ImportValue": !Sub "${PJPrefix}-vpc" }
+      Tags: 
+        - Key: Name
+          Value: !Sub "${PJPrefix}-fsx-client-sg"
+
+Outputs:
+  RDPSG:
+    Value: !Ref RDPSecurityGroup
+    Export:
+      Name: !Sub "${PJPrefix}-rdp-sg"
+
+  FSxSG:
+    Value: !Ref FSxSecurityGroup
+    Export:
+      Name: !Sub "${PJPrefix}-fsx-sg"
+
+  ClientSG:
+    Value: !Ref FSxClientSG
+    Export:
+      Name: !Sub "${PJPrefix}-client-sg"
